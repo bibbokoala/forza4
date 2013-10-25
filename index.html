@@ -1,0 +1,666 @@
+<html>
+<head>
+<title>FORZA 4</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+<script type="text/javascript">
+<!--
+var i, j, k, XMSov, UltEv, bSopra=-1, iKKK=0, bInizia;
+var Inizia, iSel, Inizia0, iLarghezza=7, iAltezza=6;
+var iPedineGiu, iMossa, iMaxMossa, iMaxMosse, iCaselle=iLarghezza*iAltezza;
+arGiocatore = new Array(2);
+Livello = new Array(2);
+Fld = new Array(iLarghezza);
+for (i=0; i<iLarghezza; i++)
+Fld[i] = new Array(iAltezza);
+FldCount = new Array(iLarghezza);
+Value = new Array(iLarghezza);
+History = new Array(iCaselle);
+Pic= new Array(7);
+for (i=0; i<6; i++)
+{ 
+	Pic[i] = new Image();
+	Pic[i].src = "./pics/connect"+i+".gif";
+}
+Pic[6] = new Image();
+Pic[6].src = "./pics/transparent.gif";
+bInizia=true;
+arGiocatore[0]=true;
+arGiocatore[1]=false;
+Livello[0]=4;
+Livello[1]=4;
+function Init()
+{ 
+	var ii, jj;
+	for (ii=0; ii<iLarghezza; ii++)
+	{ 
+		for (jj=0; jj<iAltezza; jj++)
+			Fld[ii][jj]=0;
+		FldCount[ii]=0;
+	}
+if (bInizia) Inizia0=true;
+else Inizia0=false;
+UltEv="";
+iPedineGiu=0;
+iSel=-1;
+iMossa=0;
+iMaxMossa=0;
+iMaxMosse=(iLarghezza)*(iAltezza);
+XMSov=-1;
+RefreshScreen();
+bSopra=0;
+iKKK=0;
+}
+function SetOption(nn, mm)
+{ if (nn<2)
+{ if (mm==0)
+arGiocatore[nn]=true;
+else
+arGiocatore[nn]=false;
+}
+else bInizia=mm;
+}
+function Timer()
+{ if (bSopra<0) return;
+if (bSopra>0) { Blink(); return; }
+if (iPedineGiu==0)
+{ if ((((iMossa+Inizia0)%2==1)&&(arGiocatore[0]))||
+(((iMossa+Inizia0)%2==0)&&(arGiocatore[1])));
+else
+{ if (UltEv=="") GetBestMove(((iMossa+1+Inizia0)%2)*2-1);
+if (UltEv=="Back") { Back(); UltEv=""; }
+if (UltEv=="Replay") { Replay(); UltEv=""; }
+}
+}
+if (iPedineGiu>0)
+{ if (Fld[iSel][iPedineGiu-1]==0)
+{ if (iPedineGiu<iAltezza)
+window.document.images[iLarghezza*(iAltezza-iPedineGiu)+XMSov].src = Pic[1].src;
+else
+window.document.images[iLarghezza*(iAltezza-iPedineGiu)+XMSov].src = Pic[4].src;
+if ((iMossa+Inizia0)%2==1)
+window.document.images[iLarghezza*(iAltezza+1-iPedineGiu)+XMSov].src = Pic[0].src;
+else
+window.document.images[iLarghezza*(iAltezza+1-iPedineGiu)+XMSov].src = Pic[2].src;
+}
+if (iPedineGiu>1)
+{ if (Fld[iSel][iPedineGiu-2]!=0)
+iPedineGiu=1;
+}
+if (iPedineGiu==1)
+{ if (iMossa+1<10)
+window.document.OptionsForm.Moves.value=" "+eval(iMossa+1)+" ";
+else
+window.document.OptionsForm.Moves.value=iMossa+1;
+MakeMove();
+}
+iPedineGiu--;
+}
+}
+function Back()
+{ if (iPedineGiu>0) { UltEv="Back"; return; }
+if (iMossa>0)
+{ if ((bSopra>0)&&(iKKK%2==0)) Blink();
+bSopra=0;
+iKKK=0;
+iMossa--;
+var ii=History[iMossa];
+var kk=--FldCount[ii];
+Fld[ii][kk]=0;
+if (iMossa<10)
+window.document.OptionsForm.Moves.value=" "+eval(iMossa)+" ";
+else
+window.document.OptionsForm.Moves.value=iMossa;
+RefreshPic(ii, kk);
+}
+}
+function Replay()
+{ if (iPedineGiu>0) { UltEv="Replay"; return; }
+if (iMossa<iMaxMossa)
+{ iSel=History[iMossa];
+if (iMossa+1<10)
+window.document.OptionsForm.Moves.value=" "+eval(iMossa+1)+" ";
+else
+window.document.OptionsForm.Moves.value=iMossa+1;
+MakeMove();
+RefreshPic(iSel, FldCount[iSel]-1);
+}
+}
+function MakeMove()
+{ var ccol, kk;
+ccol=((iMossa+1+Inizia0)%2)*2-1;
+kk=FldCount[iSel]++;
+Fld[iSel][kk]=ccol;
+if (History[iMossa]!=iSel)
+{ History[iMossa]=iSel;
+iMaxMossa=iMossa+1;
+}
+iMossa++;
+if (iMaxMossa<iMossa)
+iMaxMossa=iMossa;
+bSopra=IsWinning(iSel, kk, ccol);
+if (bSopra>0)
+{ if (ccol<0) alert("Ha vinto il rosso!");
+else alert("Ha vinto il giallo!");
+}
+else
+{ if (iMossa==iMaxMosse)
+{ bSopra=-1;
+alert("Parita'!");
+}
+}
+}
+function GetBestMove(theCol)
+{ var ii, kk, zz, vv, vvbest, nn, cc=theCol;
+var iiw, kkw, wwcount;
+var LLivello=Livello[(iMossa+1+Inizia0)%2];
+iSel=-1;
+for (ii=0; ii<iLarghezza; ii++)
+{ if ((kk=FldCount[ii])<iAltezza)
+{ Fld[ii][kk]=cc;
+if (IsWinning(ii, kk, cc))
+{ Fld[ii][kk]=0;
+Select(ii);
+return;
+}
+Fld[ii][kk]=0;
+}
+}
+nn=0;
+for (ii=0; ii<iLarghezza; ii++)
+{ Value[ii]=0;
+if ((kk=FldCount[ii])<iAltezza)
+{ nn++;
+Fld[ii][kk]=-cc;
+if (IsWinning(ii, kk, -cc))
+{ Fld[ii][kk]=0;
+Select(ii);
+return;
+}
+Fld[ii][kk]=0;
+}
+}
+if (LLivello>2)
+{ for (ii=0; ii<iLarghezza; ii++)
+{ if ((kk=FldCount[ii])<iAltezza)
+{ wwcount=0;
+Fld[ii][kk]=cc;
+if (kk<iAltezza-1)
+{ if ((wwcount=CanWin(ii,kk+1,cc))==2)
+{ Fld[ii][kk]=0;
+Select(ii);
+return;
+}
+}
+if (wwcount>=0)
+{ for (iiw=0; iiw<iLarghezza; iiw++)
+{ if ((kkw=FldCount[iiw])<iAltezza)
+{ if (ii!=iiw)
+{ Fld[iiw][kkw]=cc;
+if (IsWinning(iiw, kkw, cc))
+wwcount++;
+Fld[iiw][kkw]=0;
+if (wwcount>1)
+{ Fld[ii][kk]=0;
+Select(ii);
+return;
+}
+}
+}
+}
+}
+Fld[ii][kk]=0;
+}
+}
+}
+if (LLivello>3)
+{ for (ii=0; ii<iLarghezza; ii++)
+{ if ((kk=FldCount[ii])<iAltezza)
+{ vv=0;
+Fld[ii][kk]=cc;
+if (kk<iAltezza-1)
+{ Fld[ii][kk+1]=-cc;
+if (IsWinning(ii, kk+1, -cc))
+vv=-1;
+Fld[ii][kk+1]=0;
+}
+if (vv==0)
+{ Fld[ii][kk]=-cc;
+if(kk<iAltezza-1)
+{ Fld[ii][kk+1]=cc;
+if (IsWinning(ii, kk+1, cc))
+Value[ii]=-200;
+Fld[ii][kk+1]=0;
+}
+for (iiw=0; iiw<iLarghezza; iiw++)
+{ if ((kkw=FldCount[iiw])<iAltezza)
+{ if (ii!=iiw)
+{ if ((vv=CanWin(iiw,kkw,-cc))==2)
+{ Fld[ii][kk]=0;
+Select(ii);
+return;
+}
+if (vv==-1)
+Value[ii]=-100;
+}
+}
+}
+Fld[ii][kk]=cc;
+if (kk<iAltezza-1)
+{ Fld[ii][kk+1]=-cc;
+for (iiw=0; iiw<iLarghezza; iiw++)
+{ if ((kkw=FldCount[iiw])<iAltezza)
+{ if (ii!=iiw)
+{ if (CanWin(iiw,kkw,-cc)==2)
+Value[ii]=-5000;
+}
+}
+}
+Fld[ii][kk+1]=0;
+}
+}
+Fld[ii][kk]=0;
+}
+}
+}
+if (nn==0)
+{ bSopra=-1; return; }
+zz=0;
+nn=0;
+for (ii=0; ii<iLarghezza; ii++)
+{ if ((kk=FldCount[ii])<iAltezza)
+{ Fld[ii][kk]=cc;
+if (kk<iAltezza-1)
+{ Fld[ii][kk+1]=-cc;
+if (IsWinning(ii, kk+1, -cc))
+{ vv=-8100;
+Fld[ii][kk+1]=0;
+}
+else
+{ Fld[ii][kk+1]=0;
+vv=GetValue(ii, kk, cc);
+}
+}
+else
+vv=GetValue(ii, kk, cc);
+if (LLivello<2) vv+=Math.floor(Math.random()*29);
+if (LLivello<3) vv+=Math.floor(Math.random()*19);
+if (LLivello==3) vv+=Math.floor(Math.random()*9);
+if (LLivello==4) vv+=Math.floor(Math.random()*4);
+Value[ii]+=vv;
+if (zz==0) vvbest=Value[ii];
+zz++;
+if (Value[ii]==vvbest)
+nn++;
+if (Value[ii]>vvbest)
+{ nn=1;
+vvbest=Value[ii];
+}
+Fld[ii][kk]=0;
+}
+}
+zz=Math.floor(Math.random()*nn);
+nn=-1;
+for (ii=0; ii<iLarghezza; ii++)
+{ if ((kk=FldCount[ii])<iAltezza)
+{ if (vvbest==Value[ii])
+{ nn++;
+if (nn==zz)
+{ Select(ii);
+return;
+}
+}
+}
+}
+}
+function CanWin(ii, kk, cc)
+{ var kkl, kkk=kk-1;
+var vv=0;
+do
+{ kkk++;
+Fld[ii][kkk]=-cc;
+if ((IsWinning(ii, kkk, -cc)))
+{ for (kkl=kk; kkl<=kkk; kkl++)
+Fld[ii][kkl]=0;
+if (kkk==kk) return(-1);
+else return(vv);
+}
+Fld[ii][kkk]=cc;
+if ((IsWinning(ii, kkk, cc))&&(kkk<iAltezza-1))
+{ if (kkk==kk) vv++;
+Fld[ii][kkk]=-cc;
+Fld[ii][kkk+1]=cc;
+if ((IsWinning(ii, kkk+1, cc)))
+{ for (kkl=kk; kkl<=kkk+1; kkl++)
+Fld[ii][kkl]=0;
+return(2);
+}
+Fld[ii][kkk+1]=0;
+}
+Fld[ii][kkk]=-cc;
+}
+while (kkk<iAltezza-1);
+for (kkl=kk; kkl<=kkk; kkl++)
+Fld[ii][kkl]=0;
+return(vv);
+}
+function GetValue(ii, kk, ccol)
+{ var bb, cc, ccount, hh, jj, ll, ss, vval=(ii+1)*(iLarghezza-ii), mm, nn;
+for (jj=-1; jj<=1; jj+=2)
+{ nn=0;
+for (hh=-1; hh<=1; hh++)
+{ ccount=0; ss=0;
+ll=0;
+mm=0;
+do
+{ ll++;
+cc=FldCol(ii+ll,kk+hh*ll);
+if (jj*cc*ccol==cc*cc)
+{ bb=true;
+ss++;
+ccount+=3*cc*cc*(4-ll)+1;
+mm+=cc*cc;
+}
+else bb=false;
+}
+while ((ll<3)&&(bb))
+if (ss>2) vval+=(2-hh*hh)*ccount;
+if ((ll==3)&&(mm==2)) nn++;
+}
+for (hh=-1; hh<=1; hh++)
+{ ccount=0; ss=0;
+ll=0;
+mm=0;
+do
+{ ll++;
+cc=FldCol(ii-ll,kk+hh*ll);
+if (jj*cc*ccol==cc*cc)
+{ bb=true;
+ss++;
+ccount+=3*cc*cc*(4-ll)+1;
+mm+=cc*cc;
+}
+else bb=false;
+}
+while ((ll<3)&&(bb))
+if (ss>2) vval+=(2-hh*hh)*ccount;
+if ((ll==3)&&(mm==2)) nn++;
+}
+ll=0;
+mm=0;
+do
+{ ll++;
+cc=FldCol(ii,kk-ll);
+if (jj*cc*ccol==cc*cc)
+{ bb=true;
+mm+=cc*cc;
+}
+else bb=false;
+}
+while ((ll<3)&&(bb))
+if ((ll==3)&&(mm==2)) nn++;
+vval+=16*(nn-1);
+}
+return(vval);
+}
+function FldCol(ww,hh)
+{ if (ww<0) return(-2);
+if (hh<0) return(-2);
+if (ww>=iLarghezza) return(-2);
+if (hh>=iAltezza) return(-2);
+return(Fld[ww][hh]);
+}
+function IsWinning(ii, kk, ccol)
+{ var ll, ccount;
+ccount=1;
+ll=0;
+while (FldCol(ii+ll+1, kk)==ccol)
+{ ll++;
+ccount++;
+}
+ll=0;
+while (FldCol(ii-ll-1, kk)==ccol)
+{ ll++;
+ccount++;
+}
+if (ccount>=4) return(1);
+ccount=1;
+ll=0;
+while (FldCol(ii+ll+1, kk+ll+1)==ccol)
+{ ll++;
+ccount++;
+}
+ll=0;
+while (FldCol(ii-ll-1, kk-ll-1)==ccol)
+{ ll++;
+ccount++;
+}
+if (ccount>=4) return(2);
+ccount=1;
+ll=0;
+while (FldCol(ii+ll+1, kk-ll-1)==ccol)
+{ ll++;
+ccount++;
+}
+ll=0;
+while (FldCol(ii-ll-1, kk+ll+1)==ccol)
+{ ll++;
+ccount++;
+}
+if (ccount>=4) return(3);
+ccount=1;
+ll=0;
+while (FldCol(ii, kk-ll-1)==ccol)
+{ ll++;
+ccount++;
+}
+if (ccount>=4) return(4);
+return(0);
+}
+function Blink()
+{ var ii=iSel, kk=FldCount[ii]-1, ll, cc;
+var ccol=((iMossa+Inizia0)%2)*2-1;
+iKKK++;
+if (iKKK%2==0) cc=1;
+else cc=ccol+1;
+if (bSopra==1)
+{ ll=0;
+while (FldCol(ii+ll, kk)==ccol)
+{ window.document.images[ii+ll+iCaselle-(kk)*iLarghezza].src = Pic[cc].src;
+ll++;
+}
+ll=0;
+while (FldCol(ii-ll, kk)==ccol)
+{ window.document.images[ii-ll+iCaselle-(kk)*iLarghezza].src = Pic[cc].src;
+ll++;
+}
+}
+if (bSopra==2)
+{ ll=0;
+while (FldCol(ii+ll, kk+ll)==ccol)
+{ window.document.images[ii+ll+iCaselle-(kk+ll)*iLarghezza].src = Pic[cc].src;
+ll++;
+}
+ll=0;
+while (FldCol(ii-ll, kk-ll)==ccol)
+{ window.document.images[ii-ll+iCaselle-(kk-ll)*iLarghezza].src = Pic[cc].src;
+ll++;
+}
+}
+if (bSopra==3)
+{ ll=0;
+while (FldCol(ii+ll, kk-ll)==ccol)
+{ window.document.images[ii+ll+iCaselle-(kk-ll)*iLarghezza].src = Pic[cc].src;
+ll++;
+}
+ll=0;
+while (FldCol(ii-ll, kk+ll)==ccol)
+{ window.document.images[ii-ll+iCaselle-(kk+ll)*iLarghezza].src = Pic[cc].src;
+ll++;
+}
+}
+if (bSopra==4)
+{ ll=0;
+while (FldCol(ii, kk-ll)==ccol)
+{ window.document.images[ii+iCaselle-(kk-ll)*iLarghezza].src = Pic[cc].src;
+ll++;
+}
+}
+if (iKKK==15) bSopra=-1;
+}
+function Select(ii)
+{ iSel=ii;
+XMSov=ii;
+iPedineGiu=iAltezza;
+}
+function Clicked(xx)
+{ if (bSopra!=0) return;
+if (iPedineGiu>0) return;
+if (xx<0) return;
+if (xx==iLarghezza) return;
+MouseOut();
+MouseOver(xx);
+if (XMSov>=0)
+iPedineGiu=iAltezza;
+}
+function MouseOver(xx)
+{ if (bSopra!=0) return;
+if (XMSov>=0) return;
+if (xx<0) return;
+if (xx==iLarghezza) return;
+if ((((iMossa+Inizia0)%2==1)&&(arGiocatore[0]))||
+(((iMossa+Inizia0)%2==0)&&(arGiocatore[1])))
+{ if (iPedineGiu==0)
+{ if (Fld[xx][iAltezza-1]==0)
+{ if ((iMossa+Inizia0)%2==1)
+window.document.images[xx].src = Pic[3].src;
+else
+window.document.images[xx].src = Pic[5].src;
+XMSov=xx;
+iSel=xx;
+}
+}
+}
+}
+function MouseOut()
+{ if (bSopra!=0) return;
+if (XMSov>=0)
+{ if (iPedineGiu==0)
+{ window.document.images[XMSov].src = Pic[4].src;
+XMSov=-1;
+iSel=-1;
+}
+}
+}
+function RefreshPic(ii, jj)
+{ window.document.images[ii+iCaselle-(jj+0)*iLarghezza].src = Pic[1+Fld[ii][jj]].src;
+if (iMossa<10)
+window.document.OptionsForm.Moves.value=" "+eval(iMossa)+" ";
+else
+window.document.OptionsForm.Moves.value=iMossa;
+}
+function RefreshScreen()
+{ var ii, jj;
+for (ii=0; ii<iLarghezza; ii++)
+{ for (jj=0; jj<iAltezza; jj++)
+window.document.images[ii+iCaselle-jj*iLarghezza].src = Pic[1+Fld[ii][jj]].src;
+}
+window.document.images[0].src = Pic[4].src;
+window.document.images[iLarghezza-1].src = Pic[4].src;
+if (iMossa<10)
+window.document.OptionsForm.Moves.value=" "+eval(iMossa)+" ";
+else
+window.document.OptionsForm.Moves.value=iMossa;
+}
+function Resize()
+{ if(navigator.appName == "Netscape") history.go(0);
+}
+//-->
+</script>
+<style type="text/css">
+P{
+	font-family:Verdana,Arial;
+	font-size : x-small;
+}
+.submit{
+	background-color:#0000D4;
+	border-color:#D8ECFF Black Black #D8ECFF;
+	color:White;
+	font-size:xx-small;
+	height:20px;
+	font-family:Verdana,Arial;
+	font-weight:bold;
+	letter-spacing:1px;
+	border-style:solid;
+	padding-top:3px;
+	padding-right:3px;
+	padding-left:3px;
+	padding-bottom:3x;
+	margin-top:2px;
+	margin-right:2px;
+	margin-bottom:2px;
+	margin-left:2px;
+	border-style:solid;
+	border-top-width:1px;
+	border-right-width:1px;
+	border-bottom-width:1px;
+	border-left-width:1px;
+	text-transform:uppercase;
+}
+</style>
+</head>
+<body>
+<div align="center">
+<form name="OptionsForm">
+<table border="0">
+<tr>
+<td><table border="6" cellpadding="0" cellspacing="0" bgcolor="#C0C0C0">
+<script type="text/javascript">
+<!--
+window.document.writeln("<tr align=center>");
+for (i=0; i < iLarghezza; i++)
+window.document.writeln("<td><a href=\"javascript:Clicked("+i+")\" onMouseOver=\"MouseOver("+i+")\" onMouseOut=\"MouseOut()\"><img src=\"./pics/connect4.gif\" border=\"0\"\/></a></td>");
+window.document.writeln("</tr>");
+for (j=0; j < iAltezza; j++)
+{ window.document.writeln("<tr align='center'>");
+for (i=0; i < iLarghezza; i++)
+window.document.writeln("<td><img src=\"./pics/connect1.gif\" border=\"0\"></td>");
+window.document.writeln("</tr>");
+}
+window.document.close();
+//-->
+</script>
+</table>
+</td>
+</tr>
+</table>
+<p>
+<input type="radio" name="Inizia" checked value="Red" onClick="javascript:SetOption(2,1)"> Inizia Il Giocatore
+<input type="radio" name="Inizia" value="Green" onClick="javascript:SetOption(2,0)"> Inizia il Computer
+<br/>
+<input type="radio" disabled="yes" name="Red" checked value="Red: Player" onClick="javascript:SetOption(0,0)"> Giocatore contro Computer
+<input type="radio" disabled="yes" name="Red" value="Red: Computer" onClick="javascript:SetOption(0,1)"> Computer contro Computer
+</p>
+<input type="button" class="submit" value="Inizia" style="width:85" onClick="javascript:Init()">
+<table border="0" cellpadding="0" cellspacing="0"><tr>
+<td align="center">
+<input type="button" class="submit" value="&nbsp;&lt;&nbsp;" 
+	style="width:30" onClick="javascript:Back();Back()" title="indietro">
+	</td>
+<td align="center">
+<input type="button" class="submit" value="&nbsp;&nbsp;&nbsp;&nbsp;" 
+	style="width:30;background-color:#FFFFFF;font-weight:bold" disabled name="Moves">
+	</td>
+<td align="center">
+<input type="button" class="submit" value="&nbsp;&gt;&nbsp;" 
+style="width:30" onClick="javascript:Replay();Replay()" title="avanti">
+	</td>
+</tr>
+</table>
+</form>
+</div>
+<script type="text/javascript"><!--
+Init();
+setInterval("Timer()",200);
+//--></script>
+</body>
+</html>
