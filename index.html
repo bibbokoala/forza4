@@ -3,6 +3,7 @@
 <title>FORZA 4</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
 <link rel="apple-touch-icon" href="./pics/icon.png">
+<link rel="stylesheet" href="style.css" />
 <script type="text/javascript">
 <!--
 var i, j, k, XMSov, UltEv, bSopra=-1, iKKK=0, bInizia;
@@ -614,7 +615,8 @@ P{
 <form name="OptionsForm">
 <table border="0">
 <tr>
-<td><table border="6" cellpadding="0" cellspacing="0" bgcolor="#C0C0C0">
+<td>
+<table border="10" cellpadding="0" cellspacing="0" style="border-radius: 10px;">
 <script type="text/javascript">
 <!--
 window.document.writeln("<tr align=center>");
@@ -634,6 +636,7 @@ window.document.close();
 </td>
 </tr>
 </table>
+<a href="" class="start" onClick="javascript:Init()">START</a>
 <p>
 <input type="radio" name="Inizia" checked value="Red" onClick="javascript:SetOption(2,1)"> Inizia Il Giocatore
 <input type="radio" name="Inizia" value="Green" onClick="javascript:SetOption(2,0)"> Inizia il Computer
@@ -641,7 +644,6 @@ window.document.close();
 <input type="radio" disabled="yes" name="Red" checked value="Red: Player" onClick="javascript:SetOption(0,0)"> Giocatore contro Computer
 <input type="radio" disabled="yes" name="Red" value="Red: Computer" onClick="javascript:SetOption(0,1)"> Computer contro Computer
 </p>
-<input type="button" class="submit" value="Inizia" style="width:85" onClick="javascript:Init()">
 <table border="0" cellpadding="0" cellspacing="0"><tr>
 <td align="center">
 <input type="button" class="submit" value="&nbsp;&lt;&nbsp;" 
